@@ -2,11 +2,10 @@ package com.chandrika.taskmanager.service;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.chandrika.taskmanager.entity.Task;
+import com.chandrika.taskmanager.exception.TaskNotFoundException;
 import com.chandrika.taskmanager.repository.TaskRepository;
 
 @Service
@@ -24,8 +23,7 @@ public class TaskService {
 
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Task not found with id " + id));
+                .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     public Task createTask(Task task) {
