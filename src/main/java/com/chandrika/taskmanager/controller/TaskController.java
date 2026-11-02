@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chandrika.taskmanager.dto.PageResponse;
 import com.chandrika.taskmanager.entity.Task;
 import com.chandrika.taskmanager.service.TaskService;
 
@@ -37,6 +39,15 @@ public class TaskController {
 	public Task getById(@PathVariable Long id) {
 		return taskService.getTaskById(id);
 		
+	}
+	
+	@GetMapping("/search")
+	public PageResponse<Task> search(
+	        @RequestParam(defaultValue = "") String title,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "5") int size,
+	        @RequestParam(defaultValue = "id") String sortBy) {
+	    return taskService.searchTasks(title, page, size, sortBy);
 	}
 	
 	@PostMapping

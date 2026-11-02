@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,7 +19,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import com.chandrika.taskmanager.dto.PageResponse;
 import com.chandrika.taskmanager.entity.Task;
 import com.chandrika.taskmanager.exception.TaskNotFoundException;
 import com.chandrika.taskmanager.repository.TaskRepository;
@@ -164,6 +170,34 @@ class TaskServiceTest {
 		assertThrows(TaskNotFoundException.class, () -> taskService.deleteTask(99L));
 
 		verify(taskRepository, never()).delete(any(Task.class));
+	}
+
+	// --------------pagination----------
+
+	@Test
+	void searchTasks_returnsPagedResult() {
+		Page<Task> page = new PageImpl<>(List.of(task), PageRequest.of(0, 5), 1);
+		when(taskRepository.findByTitleContainingIgnoreCase(eq("learn"), any(Pageable.class))).thenReturn(page);
+
+		PageResponse<Task> result = taskService.searchTasks("learn", 0, 5, "id");
+
+		assertEquals(1, result.content().size());
+		assertEquals(1, result.totalElements());
+		assertEquals(0, result.page());
+	}
+
+	@Test
+	void searchTasks_capsPageSizeAndFallsBackToDefaultSort() {
+		Page<Task> page = new PageImpl<>(List.of(task), PageRequest.of(0, 50), 1);
+		when(taskRepository.findByTitleContainingIgnoreCase(eq(""), any(Pageable.class))).thenReturn(page);
+
+		taskService.searchTasks("", -3, 1000, "notAField");
+
+		ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+		verify(taskRepository).findByTitleContainingIgnoreCase(eq(""), captor.capture());
+		assertEquals(0, captor.getValue().getPageNumber());
+		assertEquals(50, captor.getValue().getPageSize());
+		assertTrue(captor.getValue().getSort().getOrderFor("id") != null);
 	}
 
 }
