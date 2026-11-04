@@ -18,10 +18,13 @@ import com.chandrika.taskmanager.dto.PageResponse;
 import com.chandrika.taskmanager.entity.Task;
 import com.chandrika.taskmanager.service.TaskService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/tasks")
+@Tag(name = "Tasks", description = "Create, read, update, delete and search tasks")
 public class TaskController {
 
 	private final TaskService taskService;
@@ -41,6 +44,7 @@ public class TaskController {
 		
 	}
 	
+	@Operation(summary = "Search tasks with pagination, title filter and sorting")
 	@GetMapping("/search")
 	public PageResponse<Task> search(
 	        @RequestParam(defaultValue = "") String title,
